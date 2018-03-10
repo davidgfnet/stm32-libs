@@ -10,7 +10,7 @@
 // Small implementation is slower by ~11% but saves 100+ bytes
 #define SMALLEST_IMPL
 
-static uint32_t md5k[] = {
+static const uint32_t md5k[] = {
   0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
   0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
   0x698098d8, 0x8b44f7af, 0xffff5bb1, 0x895cd7be,
@@ -30,7 +30,7 @@ static uint32_t md5k[] = {
 };
 
 #ifdef SMALLEST_IMPL
-static uint8_t md5sa_[4][4] = {
+static const uint8_t md5sa_[4][4] = {
   {7, 12, 17, 22},
   {5,  9, 14, 20},
   {4, 11, 16, 23},
@@ -42,14 +42,14 @@ static uint8_t md5sa_[4][4] = {
                   (i < 48) ? (3*i+5)&15 : \
                              (7*i)&15;
 #else
-static uint8_t md5sa_[64] = {
+static const uint8_t md5sa_[64] = {
   7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
   5,  9, 14, 20, 5,  9, 14, 20, 5,  9, 14, 20, 5,  9, 14, 20,
   4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
   6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21,
 };
 #define md5sa(i) (md5sa_[(i)])
-static uint8_t md5idx_[64] = {
+static const uint8_t md5idx_[64] = {
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
   1, 6, 11, 0, 5, 10, 15, 4, 9, 14, 3, 8, 13, 2, 7, 12,
   5, 8, 11, 14, 1, 4, 7, 10, 13, 0, 3, 6, 9, 12, 15, 2,

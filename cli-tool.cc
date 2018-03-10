@@ -28,6 +28,11 @@ const std::unordered_map<std::string, unsigned> algomap = {
 	{"sha1", ALGO_SHA1},
 	{"sha256", ALGO_SHA256},
 	{"sha512", ALGO_SHA512},
+	{"chacha20", ALGO_CHACHA20},
+	{"aes-ebc-enc", ALGO_AES_ENC_ECB},
+	{"aes-ebc-dec", ALGO_AES_DEC_ECB},
+	{"aes-cfb-enc", ALGO_AES_ENC_CFB},
+	{"aes-cfb-dec", ALGO_AES_DEC_CFB},
 };
 
 static const int CTRL_REQ_TYPE_IN  = LIBUSB_ENDPOINT_IN  | LIBUSB_REQUEST_TYPE_STANDARD | LIBUSB_RECIPIENT_INTERFACE;
@@ -85,7 +90,7 @@ int main(int argc, char ** argv) {
 		uint32_t elapsed = (report[7] << 24) | (report[6] << 16) | (report[5] << 8) | (report[4]);
 
 		printf("Iterations: %u\nTook %ums\n", niters, elapsed);
-		printf("Rate %f hashes/sec\n", niters / (elapsed / 1000.0f) );
+		printf("Rate %f iterations/sec\n", niters / (elapsed / 1000.0f) );
 	}
 
 	libusb_release_interface(devh, 0);

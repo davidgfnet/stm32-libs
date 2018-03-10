@@ -16,6 +16,7 @@
   #define read32le(x)                  (x)
   #define read16be(x) __builtin_bswap16(x)
   #define read16le(x)                  (x)
+  #define rotbyteleft(x) (((x) >> 8) | ((x) << (24)))
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
   #define read64le(x) __builtin_bswap64(x)
   #define read64be(x)                  (x)
@@ -23,6 +24,7 @@
   #define read32be(x)                  (x)
   #define read16le(x) __builtin_bswap16(x)
   #define read16be(x)                  (x)
+  #define rotbyteleft(x) (((x) << 8) | ((x) >> (24)))
 #else
   #error Could not detect platform endianess
 #endif

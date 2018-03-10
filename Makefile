@@ -13,11 +13,12 @@ APP_ADDRESS = 0x08001800
 
 APP_OFFSET = $(shell echo $$(($(APP_ADDRESS) - $(FLASH_BASE_ADDR))))
 
-CFLAGS = -Os -std=gnu99 -Wall -pedantic -Werror -Istm32/include \
+# -pedantic -Wall -Werror
+CFLAGS = -Os -std=gnu99 -Istm32/include \
 	-ffunction-sections -fdata-sections -Wno-overlength-strings \
 	-mcpu=cortex-m3 -mthumb -DSTM32F1 -fno-builtin-memcpy  \
 	-I$(LIBOPENCM3)/include -DAPP_ADDRESS=$(APP_ADDRESS)   \
-	-ggdb3 -Iinclude
+	-ggdb3 -Iinclude --param case-values-threshold=2
 
 LDFLAGS = -lopencm3_stm32f1 \
 	-ffunction-sections -fdata-sections \
@@ -28,7 +29,7 @@ LDFLAGS = -lopencm3_stm32f1 \
 all:	benchmark-img.bin
 
 
-benchmark-img.elf: benchmark.o src/md5.o src/sha1.o src/sha256.o src/hash_common.o | $(LIBOPENCM3)/lib/libopencm3_stm32f1.a
+benchmark-img.elf: benchmark.o src/md5.o src/sha1.o src/sha256.o src/hash_common.o src/aes.o src/chacha20.o | $(LIBOPENCM3)/lib/libopencm3_stm32f1.a
 	$(CC) $^ -o $@ $(LDFLAGS) -Wl,-Ttext=$(APP_ADDRESS) -Wl,-Map,uusb.map
 
 $(LIBOPENCM3)/lib/libopencm3_stm32f1.a:
@@ -60,7 +61,14 @@ test:
 	gcc -o sha256-test.bin tests/sha256-test.c src/sha256.c src/hash_common.c -Iinclude/ $(FLAGS)
 	./sha256-test.bin
 	lcov -c -d . -o sha256-test.info
-	lcov -a sha1-test.info -a sha256-test.info -o total.info
+	gcc -o aes-test.bin tests/aes-test.c src/aes.c -Iinclude/ $(FLAGS)
+	./aes-test.bin
+	lcov -c -d . -o aes-test.info
+	lcov -a md5-test.info -a sha1-test.info -a sha256-test.info -a aes-test.info -o total.info
+	gcc -o chacha20-test.bin tests/chacha20-test.c src/chacha20.c -Iinclude/ $(FLAGS)
+	./chacha20-test.bin
+	lcov -c -d . -o chacha20-test.info
+	lcov -a md5-test.info -a sha1-test.info -a sha256-test.info -a aes-test.info -a chacha20-test.info -o total.info
 
 	rm -rf coverage_report/
 	genhtml -o coverage_report/ total.info

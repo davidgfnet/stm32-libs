@@ -34,6 +34,8 @@
 #include <libopencm3/cm3/dwt.h>
 
 #include "benchmark.h"
+#include "aes.h"
+#include "chacha20.h"
 #include "md5.h"
 #include "sha1.h"
 #include "sha256.h"
@@ -277,6 +279,66 @@ void sha256_buffer() {
 	}
 }
 
+void aes_ecb_core_enc() {
+	uint8_t buf[16];
+	struct AES_ctx c;
+	AES_init_ctx_iv(&c, buf, AESkey128, buf);
+	for (unsigned i = 0; i < 16; i++) {
+		iterations++;
+		AES_ECB_encrypt(&c, buf);
+	}
+}
+
+void aes_ecb_core_dec() {
+	uint8_t buf[16];
+	struct AES_ctx c;
+	AES_init_ctx_iv(&c, buf, AESkey128, buf);
+	for (unsigned i = 0; i < 16; i++) {
+		iterations++;
+		AES_ECB_decrypt(&c, buf);
+	}
+}
+
+void aes_cfb_buf_enc() {
+	uint8_t buf[4096], key[32];
+	struct AES_ctx c;
+	AES_init_ctx_iv(&c, key, AESkey128, buf);
+	unsigned len = (algo_arg * AES_BLOCKLEN) & 4095;
+	for (unsigned i = 0; i < 16; i++) {
+		iterations++;
+		AES_CFB_encrypt(&c, buf, len);
+	}
+}
+
+void aes_cfb_buf_dec() {
+	uint8_t buf[4096], key[32];
+	struct AES_ctx c;
+	AES_init_ctx_iv(&c, key, AESkey128, buf);
+	unsigned len = (algo_arg * AES_BLOCKLEN) & 4095;
+	for (unsigned i = 0; i < 16; i++) {
+		iterations++;
+		AES_CFB_decrypt(&c, buf, len);
+	}
+}
+
+void chacha20_core() {
+	uint32_t crypto_state[16], stream[16];
+	for (unsigned i = 0; i < 16; i++) {
+		chacha20_block(crypto_state, stream);
+		iterations++;
+	}
+}
+
+void chacha20_buffer() {
+	uint8_t buffer[4096];
+	uint32_t key[16];
+	unsigned len = (algo_arg * CHACHA20_BLOCKSIZE) & 4095;
+	for (unsigned i = 0; i < 16; i++) {
+		chacha20_encrypt_decrypt_block((uint32_t*)buffer, (uint32_t*)buffer, len, key, 123);
+		iterations++;
+	}
+}
+
 int main() {
 	// Interrupt priorities
 	scb_set_priority_grouping(SCB_AIRCR_PRIGROUP_GROUP4_SUB4);
@@ -331,6 +393,24 @@ static int custom_control_request_in(usbd_device *dev, struct usb_setup_data *re
 				algoptr = sha256_core;
 			break;
 		case ALGO_SHA512:
+			break;
+		case ALGO_CHACHA20:
+			if (mode)
+				algoptr = chacha20_buffer;
+			else
+				algoptr = chacha20_core;
+			break;
+		case ALGO_AES_ENC_ECB:
+			algoptr = aes_ecb_core_enc;
+			break;
+		case ALGO_AES_DEC_ECB:
+			algoptr = aes_ecb_core_dec;
+			break;
+		case ALGO_AES_ENC_CFB:
+			algoptr = aes_cfb_buf_enc;
+			break;
+		case ALGO_AES_DEC_CFB:
+			algoptr = aes_cfb_buf_dec;
 			break;
 		default:
 			break;
