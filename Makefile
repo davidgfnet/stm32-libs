@@ -29,7 +29,7 @@ LDFLAGS = -lopencm3_stm32f1 \
 all:	benchmark-img.bin
 
 
-benchmark-img.elf: benchmark.o src/md5.o src/sha1.o src/sha256.o src/hash_common.o src/aes.o src/chacha20.o | $(LIBOPENCM3)/lib/libopencm3_stm32f1.a
+benchmark-img.elf: benchmark.o src/md5.o src/sha1.o src/sha256.o src/hash_common.o src/aes.o src/chacha20.o src/random.o | $(LIBOPENCM3)/lib/libopencm3_stm32f1.a
 	$(CC) $^ -o $@ $(LDFLAGS) -Wl,-Ttext=$(APP_ADDRESS) -Wl,-Map,uusb.map
 
 $(LIBOPENCM3)/lib/libopencm3_stm32f1.a:
@@ -42,7 +42,7 @@ $(LIBOPENCM3)/lib/libopencm3_stm32f1.a:
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 cli-tool:
-	g++ -o cli-tool cli-tool.cc sha1.c crypto.c chacha20.c -lusb-1.0 -ggdb
+	g++ -o cli-tool cli-tool.cc -lusb-1.0 -ggdb
 
 
 # Testing

@@ -11,9 +11,15 @@
 #define ALGO_AES_ENC_CFB 0x08
 #define ALGO_AES_DEC_CFB 0x09
 
+// Raw sources
+#define SRC_RAWNOISE     0x00
+#define SRC_RAND         0x01
+#define SRC_RAND_FAST    0x02
+
 // Some magic endpoints of ours to poke the key
 #define CMD_START_BENCHMARK  0x80
 #define CMD_QUERY_BENCHMARK  0x81
+#define CMD_QUERY_RAWDATA    0x82
 #define CMD_GO_DFU           0xff
 
 // Device IDs

@@ -35,6 +35,12 @@ const std::unordered_map<std::string, unsigned> algomap = {
 	{"aes-cfb-dec", ALGO_AES_DEC_CFB},
 };
 
+const std::unordered_map<std::string, unsigned> algorand = {
+	{"rawnoise", SRC_RAWNOISE},
+	{"rand", SRC_RAND},
+	{"randfast", SRC_RAND_FAST},
+};
+
 static const int CTRL_REQ_TYPE_IN  = LIBUSB_ENDPOINT_IN  | LIBUSB_REQUEST_TYPE_STANDARD | LIBUSB_RECIPIENT_INTERFACE;
 static const int CTRL_REQ_TYPE_OUT = LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_STANDARD | LIBUSB_RECIPIENT_INTERFACE;
 
@@ -74,8 +80,20 @@ int main(int argc, char ** argv) {
 		if (libusb_control_transfer(devh, CTRL_REQ_TYPE_IN, CMD_GO_DFU, 0, IFACE_NUMBER, &dummy, 1, TIMEOUT_MS) < 0)
 			fatal_error("Reboot into DFU command failed!", 0);
 	}
+	else if (algorand.count(cmd)) {
+		uint16_t mode = (algorand.at(cmd));
+		for (unsigned i = 0; i < atoi(arg1.c_str()); i++) {
+			uint8_t raw[4096];
+			auto r = libusb_control_transfer(devh, CTRL_REQ_TYPE_IN, CMD_QUERY_RAWDATA, mode, IFACE_NUMBER, raw, sizeof(raw), TIMEOUT_MS);
+			if (r < 0)
+				fatal_error("Failed to retrieve info from the device!", 0);
+			else {
+				write(1, raw, r);
+			}
+		}
+	}
 	else if (algomap.count(cmd)) {
-		printf("Starting benchmarking\n");
+		printf("Starting benchmark\n");
 		uint16_t mode = (algomap.at(cmd) << 8) | atoi(arg1.c_str());
 		auto r = libusb_control_transfer(devh, CTRL_REQ_TYPE_IN, CMD_START_BENCHMARK, mode, IFACE_NUMBER, 0, 0, TIMEOUT_MS);
 		if (r < 0)

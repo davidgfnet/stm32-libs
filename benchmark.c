@@ -39,6 +39,7 @@
 #include "md5.h"
 #include "sha1.h"
 #include "sha256.h"
+#include "random.h"
 
 static int custom_control_request_in(usbd_device *dev, struct usb_setup_data *req, uint8_t **buf, uint16_t *len,
 			void (**complete)(usbd_device *dev, struct usb_setup_data *req));
@@ -54,7 +55,7 @@ void (*volatile algoptr)() = 0;
 
 /* Buffer for the USB transactions, the bigger the better really */
 uint8_t usbd_control_buffer[256];
-uint8_t usbd_control_send[64];
+uint8_t usbd_control_send[4096];
 usbd_device *usbd_dev;
 
 
@@ -350,6 +351,7 @@ int main() {
 	dwt_enable_cycle_counter();
 	init_low_power_modes();
 
+	init_random();
 	init_clock();
 
 	while (1) {
@@ -417,15 +419,6 @@ static int custom_control_request_in(usbd_device *dev, struct usb_setup_data *re
 		};
 		algo_arg = mode;
 		restart = 1;
-
-		/*unsigned offset = req->wValue << 6U;
-		if (offset < STORAGE_ROM_SIZE + STORAGE_BLOCK_SIZE) {
-			uint8_t *rom_base = (uint8_t*)(0x08000000 + STORAGE_ROM_OFFSET - STORAGE_BLOCK_SIZE);
-			*buf = &rom_base[offset];
-			*len = 64;
-		}
-		else
-			*len = 0;*/
 		}break;
 	case CMD_QUERY_BENCHMARK: {
 		// Report the iteration count and the ms elapsed
@@ -436,6 +429,29 @@ static int custom_control_request_in(usbd_device *dev, struct usb_setup_data *re
 		*buf = usbd_control_send;
 		*len = 8;
 		}break;
+	case CMD_QUERY_RAWDATA:
+		switch (req->wValue) {
+		case SRC_RAWNOISE:
+			for (unsigned i = 0; i < sizeof(usbd_control_send); i += 64)
+				fill_raw_samples64(&usbd_control_send[i]);
+			*buf = usbd_control_send;
+			*len = sizeof(usbd_control_send);
+			break;
+		case SRC_RAND:
+			for (unsigned i = 0; i < sizeof(usbd_control_send); i += 32)
+				get_random_bytes32(&usbd_control_send[i]);
+			*buf = usbd_control_send;
+			*len = sizeof(usbd_control_send);
+			break;
+		case SRC_RAND_FAST:
+			get_random_bytes32(usbd_control_send);
+			for (unsigned i = 32; i < sizeof(usbd_control_send); i += 32)
+				sha256sum(&usbd_control_send[i-32], 32, &usbd_control_send[i]);
+			*buf = usbd_control_send;
+			*len = sizeof(usbd_control_send);
+			break;
+		};
+		break;
     case CMD_GO_DFU:
         *len = 0;
         *complete = reboot_dfu_complete;
