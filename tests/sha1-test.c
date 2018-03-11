@@ -6,12 +6,16 @@
 
 #include "sha1.h"
 
+#ifndef dbgprintf
+#define dbgprintf(...) do {} while(0);
+#endif
+
 struct t_test {
 	uint8_t result[20];
 	const char *input;
 };
 
-const struct t_test tests[] = {
+static const struct t_test tests[] = {
 	{
 		"\xa9\x99\x3e\x36\x47\x06\x81\x6a\xba\x3e\x25\x71\x78\x50\xc2\x6c\x9c\xd0\xd8\x9d",
 		"abc",
@@ -27,7 +31,7 @@ const struct t_test tests[] = {
 	},
 };
 
-int main(int argc, char **argv) {
+int sha1_test() {
 	int err = 0;
 	for (unsigned i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
 		uint8_t out[20];
@@ -35,20 +39,20 @@ int main(int argc, char **argv) {
 		err = memcmp(out, tests[i].result, 20);
 		// LCOV_EXCL_START
 		if (err) {
-			printf("Test %d mismatch\n", i);
-			printf("Ref: ");
+			dbgprintf("Test %d mismatch\n", i);
+			dbgprintf("Ref: ");
 			for (unsigned j = 0; j < 20; j++)
-				printf("%02x", tests[i].result[j]);
-			printf("\n");
-			printf("Out: ");
+				dbgprintf("%02x", tests[i].result[j]);
+			dbgprintf("\n");
+			dbgprintf("Out: ");
 			for (unsigned j = 0; j < 20; j++)
-				printf("%02x", out[j]);
-			printf("\n");
+				dbgprintf("%02x", out[j]);
+			dbgprintf("\n");
 		}
 		// LCOV_EXCL_STOP
 	}
 	if (!err)
-		printf("SHA1: Test OK, no errors!\n");
+		dbgprintf("SHA1: Test OK, no errors!\n");
 	return err;
 }
 

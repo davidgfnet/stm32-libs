@@ -80,6 +80,14 @@ int main(int argc, char ** argv) {
 		if (libusb_control_transfer(devh, CTRL_REQ_TYPE_IN, CMD_GO_DFU, 0, IFACE_NUMBER, &dummy, 1, TIMEOUT_MS) < 0)
 			fatal_error("Reboot into DFU command failed!", 0);
 	}
+	else if (cmd == "selftest") {
+		uint8_t s;
+		auto r = libusb_control_transfer(devh, CTRL_REQ_TYPE_IN, CMD_RUN_SELFTEST, 0, IFACE_NUMBER, &s, 1, TIMEOUT_MS*10);
+		if (r < 0)
+			fatal_error("Failed to retrieve info from the device!", 0);
+		else
+			printf("Test result: %s\n", s ? "failed" : "PASS!");
+	}
 	else if (algorand.count(cmd)) {
 		uint16_t mode = (algorand.at(cmd));
 		for (unsigned i = 0; i < atoi(arg1.c_str()); i++) {

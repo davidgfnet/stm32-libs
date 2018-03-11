@@ -40,6 +40,7 @@
 #include "sha1.h"
 #include "sha256.h"
 #include "random.h"
+#include "tests/test_main.h"
 
 static int custom_control_request_in(usbd_device *dev, struct usb_setup_data *req, uint8_t **buf, uint16_t *len,
 			void (**complete)(usbd_device *dev, struct usb_setup_data *req));
@@ -371,6 +372,11 @@ static int custom_control_request_in(usbd_device *dev, struct usb_setup_data *re
 
 	// Receive data from Host
 	switch (req->bRequest) {
+	case CMD_RUN_SELFTEST:
+		usbd_control_send[0] = runalltests();
+		*buf = usbd_control_send;
+		*len = 1;
+		break;
 	case CMD_START_BENCHMARK: {
 		// Start running iterations of some hash/crypto algorithm
 		uint8_t algo = req->wValue >> 8;

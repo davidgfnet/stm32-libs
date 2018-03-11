@@ -17,9 +17,10 @@
 #define SRC_RAND_FAST    0x02
 
 // Some magic endpoints of ours to poke the key
-#define CMD_START_BENCHMARK  0x80
-#define CMD_QUERY_BENCHMARK  0x81
-#define CMD_QUERY_RAWDATA    0x82
+#define CMD_RUN_SELFTEST     0x80
+#define CMD_START_BENCHMARK  0x81
+#define CMD_QUERY_BENCHMARK  0x82
+#define CMD_QUERY_RAWDATA    0x83
 #define CMD_GO_DFU           0xff
 
 // Device IDs

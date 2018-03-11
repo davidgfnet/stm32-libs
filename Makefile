@@ -28,8 +28,10 @@ LDFLAGS = -lopencm3_stm32f1 \
 # Benchmark image
 all:	benchmark-img.bin
 
+TESTSOBJS=tests/md5-test.o tests/sha1-test.o tests/sha256-test.o tests/chacha20-test.o tests/aes-test.o
+LIBOBJS=src/libc-alt.o src/md5.o src/sha1.o src/sha256.o src/hash_common.o src/aes.o src/chacha20.o src/random.o
 
-benchmark-img.elf: benchmark.o src/md5.o src/sha1.o src/sha256.o src/hash_common.o src/aes.o src/chacha20.o src/random.o | $(LIBOPENCM3)/lib/libopencm3_stm32f1.a
+benchmark-img.elf: benchmark.o $(LIBOBJS) $(TESTSOBJS) | $(LIBOPENCM3)/lib/libopencm3_stm32f1.a
 	$(CC) $^ -o $@ $(LDFLAGS) -Wl,-Ttext=$(APP_ADDRESS) -Wl,-Map,uusb.map
 
 $(LIBOPENCM3)/lib/libopencm3_stm32f1.a:
@@ -52,28 +54,16 @@ MEMORY_CHECK_FLAGS=-fsanitize=address -lasan
 FLAGS=-ggdb -O0 $(COVERAGE_FLAGS) $(MEMORY_CHECK_FLAGS)
 
 test:
-	gcc -o md5-test.bin tests/md5-test.c src/md5.c src/hash_common.c -Iinclude/ $(FLAGS)
-	./md5-test.bin
-	lcov -c -d . -o md5-test.info
-	gcc -o sha1-test.bin tests/sha1-test.c src/sha1.c src/hash_common.c -Iinclude/ $(FLAGS)
-	./sha1-test.bin
-	lcov -c -d . -o sha1-test.info
-	gcc -o sha256-test.bin tests/sha256-test.c src/sha256.c src/hash_common.c -Iinclude/ $(FLAGS)
-	./sha256-test.bin
-	lcov -c -d . -o sha256-test.info
-	gcc -o aes-test.bin tests/aes-test.c src/aes.c -Iinclude/ $(FLAGS)
-	./aes-test.bin
-	lcov -c -d . -o aes-test.info
-	lcov -a md5-test.info -a sha1-test.info -a sha256-test.info -a aes-test.info -o total.info
-	gcc -o chacha20-test.bin tests/chacha20-test.c src/chacha20.c -Iinclude/ $(FLAGS)
-	./chacha20-test.bin
-	lcov -c -d . -o chacha20-test.info
-	lcov -a md5-test.info -a sha1-test.info -a sha256-test.info -a aes-test.info -a chacha20-test.info -o total.info
-
+	gcc -o alltests.bin tests/test_main.c tests/md5-test.c tests/sha1-test.c \
+		tests/sha256-test.c tests/aes-test.c tests/chacha20-test.c \
+		src/md5.c src/sha1.c src/sha256.c src/hash_common.c src/chacha20.c src/aes.c \
+		-Iinclude/ $(FLAGS) -Ddbgprintf=printf
+	./alltests.bin
+	lcov -c -d . -o total.info
 	rm -rf coverage_report/
 	genhtml -o coverage_report/ total.info
 
 clean:
-	rm -f *.gcno *.gcov *.gcda *.bin *.html *.info *.o src/*.o *.elf
+	rm -f *.gcno *.gcov *.gcda *.bin *.html *.info *.o src/*.o tests/*.o *.elf
 
 

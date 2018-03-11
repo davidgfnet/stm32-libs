@@ -6,6 +6,10 @@
 
 #include "chacha20.h"
 
+#ifndef dbgprintf
+#define dbgprintf(...) do {} while(0);
+#endif
+
 struct t_test {
 	uint8_t key[32];
 	uint8_t nonce[8];
@@ -13,7 +17,7 @@ struct t_test {
 	const char *keystream;
 };
 
-const struct t_test tests[] = {
+static const struct t_test tests[] = {
 	{
 		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -104,7 +108,7 @@ const struct t_test tests[] = {
 	},
 };
 
-int main(int argc, char **argv) {
+int chacha20_test() {
 	int err = 0;
 	for (unsigned i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
 		uint8_t out[249] = {0};
@@ -112,21 +116,21 @@ int main(int argc, char **argv) {
 		err = memcmp(out, tests[i].keystream, tests[i].len);
 		// LCOV_EXCL_START
 		if (err) {
-			printf("Test %d mismatch\n", i);
-			printf("Ref: ");
+			dbgprintf("Test %d mismatch\n", i);
+			dbgprintf("Ref: ");
 			for (unsigned j = 0; j < tests[i].len; j++)
-				printf("%02x", ((uint8_t*)tests[i].keystream)[j]);
-			printf("\n");
-			printf("Out: ");
+				dbgprintf("%02x", ((uint8_t*)tests[i].keystream)[j]);
+			dbgprintf("\n");
+			dbgprintf("Out: ");
 			for (unsigned j = 0; j < tests[i].len; j++)
-				printf("%02x", (unsigned)out[j]);
-			printf("\n");
+				dbgprintf("%02x", (unsigned)out[j]);
+			dbgprintf("\n");
 		}
 		if (err)
 			return 1;
 		// LCOV_EXCL_STOP
 	}
-	printf("Test OK, no errors!\n");
+	dbgprintf("Test OK, no errors!\n");
 
 	return 0;
 }

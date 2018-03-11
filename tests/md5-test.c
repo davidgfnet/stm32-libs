@@ -6,6 +6,10 @@
 
 #include "md5.h"
 
+#ifndef dbgprintf
+#define dbgprintf(...) do {} while(0);
+#endif
+
 struct t_test {
 	uint8_t result[16];
 	const char *input;
@@ -27,7 +31,7 @@ const struct t_test tests[] = {
 	},
 };
 
-int main(int argc, char **argv) {
+int md5_test() {
 	int err = 0;
 	for (unsigned i = 0; i < sizeof(tests)/sizeof(tests[0]); i++) {
 		uint8_t out[16];
@@ -35,20 +39,20 @@ int main(int argc, char **argv) {
 		err = memcmp(out, tests[i].result, sizeof(out));
 		// LCOV_EXCL_START
 		if (err) {
-			printf("Test %d mismatch\n", i);
-			printf("Ref: ");
+			dbgprintf("Test %d mismatch\n", i);
+			dbgprintf("Ref: ");
 			for (unsigned j = 0; j < sizeof(out); j++)
-				printf("%02x", tests[i].result[j]);
-			printf("\n");
-			printf("Out: ");
+				dbgprintf("%02x", tests[i].result[j]);
+			dbgprintf("\n");
+			dbgprintf("Out: ");
 			for (unsigned j = 0; j < sizeof(out); j++)
-				printf("%02x", out[j]);
-			printf("\n");
+				dbgprintf("%02x", out[j]);
+			dbgprintf("\n");
 		}
 		// LCOV_EXCL_STOP
 	}
 	if (!err)
-		printf("MD5: Test OK, no errors!\n");
+		dbgprintf("MD5: Test OK, no errors!\n");
 	return err;
 }
 

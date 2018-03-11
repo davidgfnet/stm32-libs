@@ -6,6 +6,10 @@
 #include <stdlib.h>
 #include "aes.h"
 
+#ifndef dbgprintf
+#define dbgprintf(...) do {} while(0);
+#endif
+
 typedef struct testVector {
     AESKeyType  ktype;
     const char  input[16];
@@ -14,7 +18,7 @@ typedef struct testVector {
     const char  output[16];
 } testVector;
 
-int main() {
+int aes_test() {
     testVector t[] = {
         {
             .ktype  = AESkey128,
