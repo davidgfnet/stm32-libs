@@ -56,6 +56,11 @@ void init_random() {
 	adc_power_on(ADC1);
 
 	adc_reset_calibration(ADC1);
+
+	// Enable CRC machinery
+	rcc_periph_clock_enable(RCC_AHBENR_CRCEN);
+	rcc_periph_clock_enable(RCC_CRC);
+	crc_reset();
 }
 
 // Fills the buffer with 64 bytes of raw data from the STM32 ADC
