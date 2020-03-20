@@ -59,11 +59,12 @@ static const t_hash_fns sha1desc = {
 
 // Get the sha1sum for a buffer
 void sha1sum(const uint8_t *inbuffer, unsigned length, void *output) {
-	uint32_t *state = (uint32_t*)output;
-	hash32_sum(&sha1desc, inbuffer, length, output);
+	uint32_t state[5];
+	hash32_sum(&sha1desc, inbuffer, length, state);
 
 	// Output conversion
+	uint32_t *out32 = (uint32_t*)output;
 	for (unsigned i = 0; i < 5; i++)
-		state[i] = read32be(state[i]);
+		out32[i] = read32be(state[i]);
 }
 
